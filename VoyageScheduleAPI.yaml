@@ -4,7 +4,7 @@ info:
   description: This API provides the voyage schedules of a carrier. It is based on the UN/CEFACT EDIFACT model. The API will be extended for more use cases.
   version: 0.1.0
   x-logo:
-    url: 'https://api.apis.guru/v2/cache/logo/https_www.gstatic.com_images_icons_material_product_2x_calendar_64dp.png'
+    url: 'logo.png'
   host: api.example.com
 basePath: /transport/v1
 schemes:
