@@ -1,0 +1,219 @@
+swagger: '2.0'
+info:
+  title: Voyage Schedule
+  description: This API provides the voyage schedules of a carrier. It is based on the UN/CEFACT EDIFACT model. The API will be extended for more use cases.
+  version: 0.1.0
+  x-logo:
+    url: 'https://api.apis.guru/v2/cache/logo/https_www.gstatic.com_images_icons_material_product_2x_calendar_64dp.png'
+  host: api.example.com
+basePath: /transport/v1
+schemes:
+  - https
+paths:
+  /voyageSchedules/findByLocation:
+    get:
+      tags:
+      - Schedule
+      summary: Returns a list of Voyage Schedules for a specific location.
+      description: Find all voyages for a specific location. Returns an array.</br>
+                   <b>Examples:</b></br>
+                   <b><i>find voyages for Hamburg, Germany</b></i></br>
+                   /voyageSchedules/findByLocation?locationNameCode=DEHAM </br></br>
+                   <b><i>find voyages for Container Terminal Altenwerder in Hamburg, Germany</b></i></br>
+                   /voyageSchedules/findByLocation?locationNameCode=DEHAM&relatedLocationNameCode=CTA  
+      produces:
+        - application/json
+      parameters:
+        - name: locationNameCode
+          in: query
+          description: The UN location code (e.g. "DEHAM")
+          required: true
+          type: string
+        - name: relatedLocationNameCode
+          in: query
+          description: The 1st related Location code
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/TransportInformation'
+        '400':
+          description: 'Invalid UN location code and/or related location code supplied'
+        '404':
+          description: 'No voyage found'
+  /voyageSchedules/findByID/{meansOfTransportJourneyIdentifier}:
+    get:
+      tags:
+      - Schedule
+      summary: Find voyage by ID
+      description: Returns a single voyage
+      operationId: getVoyageById
+      produces:
+      - application/json
+      parameters:
+      - name: meansOfTransportJourneyIdentifier
+        in: path
+        description: ID of voyage to return
+        required: true
+        type: string
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/TransportInformation"
+        400:
+          description: "Invalid voyage ID supplied"
+        404:
+          description: "Voyage not found"
+  /voyageSchedules/findByStartAndDestination:
+    get:
+      tags:
+      - Schedule
+      summary: Returns a list of Voyage Schedules for a specific start and destination location.
+      description: Find all voyages for a specific start and destination location. Returns an array.</br>
+                   <b>Examples:</b></br>
+                   <b><i>find voyages for Hamburg, Germany to New York City, USA</b></i></br>
+                   /voyageSchedules/findByStartAndDestination?locationNameCode=DEHAM&locationNameCode=USNYC </br></br>
+                   <b><i>find voyages for Container Terminal Altenwerder in Hamburg to New York City</b></i></br>
+                   /voyageSchedules/findByStartAndDestination?locationNameCode=DEHAM&relatedLocationNameCode=CTA&locationNameCode=USNYC 
+      produces:
+        - application/json
+      parameters:
+        - name: startLocationNameCode
+          in: query
+          description: The UN location code (e.g. "DEHAM")
+          required: true
+          type: string
+        - name: StartRelatedLocationNameCode
+          in: query
+          description: The 1st related Location code
+          required: false
+          type: string
+        - name: EndLocationNameCode
+          in: query
+          description: The UN location code (e.g. "DEHAM")
+          required: true
+          type: string
+        - name: EndRelatedLocationNameCode
+          in: query
+          description: The 1st related Location code
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/TransportInformation'
+        '400':
+          description: 'Invalid UN location codes and/or related location codes supplied'
+        '404':
+          description: 'No voyage found'
+definitions:
+  TransportInformation:
+    properties:
+      meansOfTransportJourneyIdentifier:
+        description: Voyage number  (e.g.  loading voyage number , main carriage  or  Carrier's internal  voyage number (main carriage) . In case voyage number unknown abbreviation "TBN"  should be used.
+        type: string
+      carrier:
+        $ref: '#/definitions/Carrier'
+      transportIdentification:
+        $ref: '#/definitions/TransportIdentification'
+      placeLocationIdentification:
+        type: array
+        items:
+          $ref: '#/definitions/PlaceLocationIdentification'
+  Carrier:
+    properties:
+      carrierIdentifier:
+        description: Vessel operator's name coded, preferably accdg to SMDG carrier code list
+        type: string
+      codeListIdentificationCode:
+        description: 172 - Carriers
+        type: string
+      codeListResponsibleAgencyCode:
+        description: 306 - SMDG carrier code list (preferred) </br>
+                     20 - BIC (Bureau International des Containeurs)</br>
+                     87 - Assigned by carrier</br>
+                     182 - US, Standard Carrier Alpha Code (Motor)</br>
+                     184 - AU, ACOS (Australian Chamber of Shipping)
+        type: string
+  TransportIdentification:
+    properties:
+      transportMeansIdentificationNameIdentifier:
+        description: 1. Lloyd's number / IMO number   ( recommended) </br>
+                     2. Mutually agreed vessel code </br>
+                     3. Leave blank in case vessel not known 
+        type: string
+      codeListIdentificationCode:
+        description: 103 - Call sign directory 
+                     146 - Means of transport identification recommended  = Lloyd’s code
+        type: string
+      codeListResponsibleAgencyCode:
+        description: 11 - Lloyd's register of shipping
+        type: string
+      transportMeansIdentificationName:
+        description: Vessel name  (or other means of transport by name or number) e.g.  vessel   CTS HAMBURG                EXPRESS. In case vessel name not known , abbreviation  TBN  should be used  instead 
+        type: string
+      transportMeansNationalityCode:
+        description: ISO country code, e.g. GB for United Kingdom, DE for Germany
+        type: string
+  PlaceLocationIdentification:
+    properties:
+      locationFunctionCodeQualifier:
+        description: 9 - Place/port of loading </br>
+                     11 - Place/port of discharge
+        type: string
+      locationIdentification:
+        $ref: '#/definitions/LocationIdentification'
+      relatedLocationOneIdentification:
+        $ref: '#/definitions/RelatedLocationOneIdentification'
+      dateTimePeriod:
+        type: array
+        items:
+          $ref: '#/definitions/DateTimePeriod'
+  LocationIdentification:
+    properties:
+      locationNameCode:
+        description: United Nation Location Code
+        type: string
+      codeListIdentificationCode:
+        description: 139 - Port
+        type: string
+      codeListResponsibleAgencyCode:
+        description: 6 - UN/ECE (United Nations - Economic Commission for Europe)
+        type: string
+  RelatedLocationOneIdentification:
+    properties:
+      relatedLocationNameCode:
+        description: 1st related Location code
+        type: string
+      codeListIdentificationCode:
+        description: 72 - Container terminal </br>
+                     266 - Marine berth </br>
+                     267 - Marine wharf 
+        type: string
+      codeListResponsibleAgencyCode:
+        description: 9 - EAN (International Article Numbering association) </br>
+                     184 - AU, ACOS (Australian Chamber of Shipping) </br>
+                     SMD - SMDG (Shipplanning Message Development Group)
+        type: string
+  DateTimePeriod:
+    properties:
+      dateOrTimeOrPeriodFunctionCodeQualifier:
+        description: 132 - Arrival date/time, estimated </br>
+                     133 - Departure date/time, estimated </br>
+                     178 - Arrival date/time, actual </br>
+                     186 - Departure date/time, actual
+        type: string
+      dateOrTimeOrPeriodValue:
+        description: Arrival/departure date/time
+        type: string
+      dateOrTimeOrPeriodFormat:
+        description: 203 - CCYYMMDDHHMM
+        type: string
